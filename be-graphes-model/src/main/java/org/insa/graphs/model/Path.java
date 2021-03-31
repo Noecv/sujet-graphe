@@ -51,7 +51,6 @@ public class Path {
         			lpath.add(path);
         		}
         	}
-        	System.out.print("lpath");
         	if (lpath.isEmpty()) {
         		throw new IllegalArgumentException();
         	}
@@ -64,6 +63,12 @@ public class Path {
         	}
         	arcs.add(shortest);
         	
+        }
+        if (nodes.isEmpty()) {
+            return new Path(graph);
+        }
+        if (arcs.isEmpty()) {
+            return new Path(graph, nodes.get(0));
         }
         return new Path(graph, arcs);
     }
@@ -114,6 +119,12 @@ public class Path {
         		}
         	}
         	arcs.add(shortest);
+        }
+        if (nodes.isEmpty()) {
+            return new Path(graph);
+        }
+        if (arcs.isEmpty()) {
+            return new Path(graph, nodes.get(0));
         }
         return new Path(graph, arcs);
     }
