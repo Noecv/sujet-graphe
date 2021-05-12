@@ -11,23 +11,19 @@ public class AStarAlgorithm extends DijkstraAlgorithm {
     }
     
     protected class LabelStar extends Label{
-    	private Double distance_origine;
-    	public LabelStar (Node courant, Arc pere, double distance_origine) {
-			super(courant,pere,distance_origine);
-			this.cout=distance_origine+courant.getPoint().distanceTo(getInputData().getDestination().getPoint());
-			this.distance_origine=distance_origine;
+    	public LabelStar (Node courant, Arc pere, double cout) {
+			super(courant,pere,cout);
 		}
-
-		public void setCost(double cout) {
-			this.distance_origine=cout;
-			this.cout=cout+this.courant.getPoint().distanceTo(getInputData().getDestination().getPoint());
-			
-		}
-    	
+    	protected  double GetTotalCost () {
+    		if (data.getMode() == org.insa.graphs.algorithm.AbstractInputData.Mode.TIME) {
+        		return (this.cout+(this.courant.getPoint().distanceTo(getInputData().getDestination().getPoint()))/data.getGraph().getGraphInformation().getMaximumSpeed());
+    		}
+    		return (this.cout+this.courant.getPoint().distanceTo(getInputData().getDestination().getPoint()));
+    	}
 	}
     
-	protected Label createlabel(Node fils,Arc successeur,Label min) {
-		return new Label (fils,successeur,min.getCost()+ successeur.getMinimumTravelTime()+fils.getPoint().distanceTo(getInputData().getDestination().getPoint()));
+	protected Label createlabel(Node fils,Arc successeur,double cout) {
+		return new LabelStar (fils,successeur,cout);
 	}
 
 }

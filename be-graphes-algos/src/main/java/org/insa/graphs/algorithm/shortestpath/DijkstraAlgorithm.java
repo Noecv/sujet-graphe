@@ -7,7 +7,7 @@ import org.insa.graphs.algorithm.utils.BinaryHeap;
 import org.insa.graphs.model.*;
 
 public class DijkstraAlgorithm extends ShortestPathAlgorithm {
-	
+	public static double EPSILON = 0.0000000001;
 	protected class Label implements Comparable<Label> {
 		protected Node courant;
 		protected boolean marque=false;
@@ -21,14 +21,17 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 		}
 		@Override
 		public int compareTo(Label label) {
-			if (this.cout==label.getCost()) {
+			if (Math.abs(this.GetTotalCost()-label.GetTotalCost())<EPSILON) {
 				return 0;
 			}
-			if (this.cout<label.getCost()) {
+			if (this.GetTotalCost()<label.GetTotalCost()) {
 				return -1;
 			}
 			return 1;
 			
+		}
+		protected  double GetTotalCost () {
+			return this.cout;
 		}
 		
 		public void mark() {
@@ -54,37 +57,36 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 			return this.cout;
 		}
 	}
-	private Label createlabel(Node fils,Arc successeur,Label min) {
-		return new Label (fils,successeur,min.getCost()+ successeur.getMinimumTravelTime());
+	protected Label createlabel(Node fils,Arc successeur,double cout) {
+		return new Label (fils,successeur,cout);
 	}
     public DijkstraAlgorithm(ShortestPathData data) {
         super(data);
     }
+    
 
     @Override
     protected ShortestPathSolution doRun() {
         final ShortestPathData data = getInputData();
         ShortestPathSolution solution = null;
         // TODO:
-        // Notify observers about the first event (origin processed).
-        notifyOriginProcessed(data.getOrigin());
         
         Graph graph = data.getGraph();
         int nbNodes = graph.size();
 
         // Initialize array of Label.
         Label[] labels = new Label[nbNodes];
-        labels[data.getOrigin().getId()]=new Label(data.getOrigin(),null,0);
+        labels[data.getOrigin().getId()]=createlabel(data.getOrigin(),null,0);
         
         BinaryHeap<Label> tas = new BinaryHeap<Label>();
         tas.insert(labels[data.getOrigin().getId()]);
         
+        // Notify observers about the first event (origin processed).
+        notifyOriginProcessed(data.getOrigin());
+        
         boolean condition=true;  //condition qu'on passera à false quand la destination sera traitée
         Label min;
         while (condition) {  //construction du tableau de dijkstra
-        	if (tas.isEmpty()) {
-        		
-        	}
         	min=tas.deleteMin();  //On récupère l'élément de moindre cout dans le tableau en temps constant grâce au tas binaire
         	labels[min.getcurrent().getId()].mark();   //On le marque puisque on a trouvé le chemin de taille minimal reliant l'origine à ce noeud
         	if (min.getcurrent() == data.getDestination()) {
@@ -101,19 +103,22 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         		
         		if (labels[fils.getId()] == null) {   //cas où le noeud destination de l'arc n'a jamais été traité
                     notifyNodeReached(successeur.getDestination());
-        			labels[fils.getId()] = createlabel(fils, successeur, min);   //On lui attribue comme père le noeud min et son cout est cout(min)+cout(arc)
+        			labels[fils.getId()] = createlabel(fils, successeur, min.getCost()+ data.getCost(successeur));   //On lui attribue comme père le noeud min et son cout est cout(min)+cout(arc)
         	        tas.insert(labels[fils.getId()]);  //on insère ce label dans le tas
         		}
         		else if (labels[fils.getId()].getmark()) {  //si on a déjà trouvé le chemin de taille minimum jusqu'à la destination de l'arc, on enchaine
         			continue;
         		}
-        		else if (labels[fils.getId()].getCost()>min.getCost()+ successeur.getMinimumTravelTime()){  //On regarde si le nouveau chemin pour lier la destination de l'arc est plus efficace
+        		else if (labels[fils.getId()].getCost()>min.getCost()+ data.getCost(successeur)){  //On regarde si le nouveau chemin pour lier la destination de l'arc est plus efficace
         			labels[fils.getId()].setfather(successeur);
-        			labels[fils.getId()].setCost(min.getCost()+ successeur.getMinimumTravelTime());
+        			labels[fils.getId()].setCost(min.getCost()+ data.getCost(successeur));
         			tas.remove(labels[fils.getId()]);
         			tas.insert(labels[fils.getId()]);   // On retri le tas
         		}
         		
+        	}
+        	if (tas.isEmpty()) {
+        		condition = false;
         	}
         }
         
