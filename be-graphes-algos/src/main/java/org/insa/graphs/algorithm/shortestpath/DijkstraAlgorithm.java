@@ -8,11 +8,11 @@ import org.insa.graphs.model.*;
 
 public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 	
-	private class Label implements Comparable<Label> {
-		private Node courant;
-		private boolean marque=false;
-		private double cout=Double.POSITIVE_INFINITY;
-		private Arc pere=null;
+	protected class Label implements Comparable<Label> {
+		protected Node courant;
+		protected boolean marque=false;
+		protected double cout=Double.POSITIVE_INFINITY;
+		protected Arc pere=null;
 		
 		public Label(Node courant, Arc pere, double cout) {
 			this.courant=courant;
@@ -54,7 +54,9 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 			return this.cout;
 		}
 	}
-	
+	private Label createlabel(Node fils,Arc successeur,Label min) {
+		return new Label (fils,successeur,min.getCost()+ successeur.getMinimumTravelTime());
+	}
     public DijkstraAlgorithm(ShortestPathData data) {
         super(data);
     }
@@ -64,6 +66,9 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         final ShortestPathData data = getInputData();
         ShortestPathSolution solution = null;
         // TODO:
+        // Notify observers about the first event (origin processed).
+        notifyOriginProcessed(data.getOrigin());
+        
         Graph graph = data.getGraph();
         int nbNodes = graph.size();
 
@@ -95,7 +100,8 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         		}
         		
         		if (labels[fils.getId()] == null) {   //cas où le noeud destination de l'arc n'a jamais été traité
-        			labels[fils.getId()] = new Label (fils,successeur,min.getCost()+ successeur.getMinimumTravelTime());   //On lui attribue comme père le noeud min et son cout est cout(min)+cout(arc)
+                    notifyNodeReached(successeur.getDestination());
+        			labels[fils.getId()] = createlabel(fils, successeur, min);   //On lui attribue comme père le noeud min et son cout est cout(min)+cout(arc)
         	        tas.insert(labels[fils.getId()]);  //on insère ce label dans le tas
         		}
         		else if (labels[fils.getId()].getmark()) {  //si on a déjà trouvé le chemin de taille minimum jusqu'à la destination de l'arc, on enchaine
@@ -119,6 +125,8 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         	courant=labels[courant.getfather().getOrigin().getId()];
         }
         Path path = new Path(graph , pluscourtchemin);
+        // The destination has been found, notify the observers.
+        notifyDestinationReached(data.getDestination());
         solution = new ShortestPathSolution(data, Status.OPTIMAL, path);
         
         return solution;
