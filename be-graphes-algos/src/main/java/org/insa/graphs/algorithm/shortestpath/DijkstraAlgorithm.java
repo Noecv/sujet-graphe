@@ -70,8 +70,14 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         final ShortestPathData data = getInputData();
         ShortestPathSolution solution = null;
         // TODO:
-        
         Graph graph = data.getGraph();
+        
+     	if (data.getOrigin()==data.getDestination()) {
+     		Path path = new Path(graph, data.getOrigin());
+     		solution = new ShortestPathSolution(data, Status.OPTIMAL, path);
+     		return solution;
+     		
+     	}
         int nbNodes = graph.size();
 
         // Initialize array of Label.
@@ -124,6 +130,10 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         
         java.util.List<Arc> pluscourtchemin = new ArrayList<Arc>();
         Label courant = labels[data.getDestination().getId()];
+        if (courant == null) {
+            solution = new ShortestPathSolution(data, Status.INFEASIBLE);
+            return solution;
+        }
         condition = true;
         while (courant.getfather()!=null) {
         	pluscourtchemin.add(0,courant.getfather());
