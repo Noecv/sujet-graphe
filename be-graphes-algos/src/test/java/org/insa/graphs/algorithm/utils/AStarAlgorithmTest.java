@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.insa.graphs.algorithm.ArcInspectorFactory;
-import org.insa.graphs.algorithm.shortestpath.BellmanFordAlgorithm;
+import org.insa.graphs.algorithm.shortestpath.AStarAlgorithm;
 import org.insa.graphs.algorithm.shortestpath.DijkstraAlgorithm;
 import org.insa.graphs.algorithm.shortestpath.ShortestPathData;
 import org.insa.graphs.algorithm.shortestpath.ShortestPathSolution;
@@ -27,7 +27,7 @@ import org.insa.graphs.model.io.GraphReader;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class DIjsktraTalgo {
+public class AStarAlgorithmTest {
 
     // Small graph use for tests
     private static Graph graph;
@@ -44,7 +44,7 @@ public class DIjsktraTalgo {
     private static Arc a2b, a2c, a2e, b2c, c2d_1, c2d_2, c2d_3, c2a, d2a, d2e, e2d;
 
     
-    private static BellmanFordAlgorithm BFA;
+    private static AStarAlgorithm Astar;
     
 
     private static DijkstraAlgorithm Dijkstra;
@@ -84,30 +84,17 @@ public class DIjsktraTalgo {
 	@Test
 	public void testOneNodeSolution()throws Exception {
 		data = new ShortestPathData(graph, nodes[0], nodes[0], ArcInspectorFactory.getAllFilters().get(0));
-		BFA = new BellmanFordAlgorithm(data);
-		solnull = BFA.run();
+		Astar = new AStarAlgorithm(data);
+		solnull = Astar.run();
 		Dijkstra = new DijkstraAlgorithm(data);
 		soltest = Dijkstra.run();
 		assertEquals(solnull.toString(), soltest.toString());  // Ici BFA renvoie une absence de chemin alors que Dijkstra renvoie un chemin de longueur nulle, je ne règle pas cette failure car je préfère l'interprétation faite par Dijkstra
 	}
 	
 
-	@Test
-	public void testTwonodesSolution() throws Exception {
-		data = new ShortestPathData(graph, nodes[0], nodes[1], ArcInspectorFactory.getAllFilters().get(0));
-		BFA = new BellmanFordAlgorithm(data);
-		Dijkstra = new DijkstraAlgorithm(data);
-		assertEquals( BFA.run().toString(),Dijkstra.run().toString());  
-		}
 
 
-	@Test
-	public void testImpossible() throws Exception {
-		data = new ShortestPathData(graph, nodes[0], nodes[5], ArcInspectorFactory.getAllFilters().get(0));
-		BFA = new BellmanFordAlgorithm(data);
-		Dijkstra = new DijkstraAlgorithm(data);
-		assertEquals( BFA.run().toString(),Dijkstra.run().toString());  
-		}
+
 
 	@Test
 	public void testGuadeloupe() throws Exception {
@@ -121,7 +108,7 @@ public class DIjsktraTalgo {
 	    
 	    
 	    
-	    for(int i=0; i<5; i++) {
+	    for(int i=0; i<15; i++) {
 	    	Random random = new Random();
 	    	int a = random.nextInt(graphcarre.size());
 	    	int b =  random.nextInt(graphcarre.size());
@@ -131,18 +118,18 @@ public class DIjsktraTalgo {
 	    	Node origin = graphcarre.get(a);
 	    	Node goal = graphcarre.get(b);
 	    	data = new ShortestPathData(graphcarre, origin, goal, ArcInspectorFactory.getAllFilters().get(0));
-	    	BFA = new BellmanFordAlgorithm(data);
+	    	Astar = new AStarAlgorithm(data);
 	    	Dijkstra = new DijkstraAlgorithm(data);
 	    	
-	    	if (BFA.run().isFeasible()) {
-	    		List<Arc> expected = BFA.run().getPath().getArcs();
+	    	if (Astar.run().isFeasible()) {
+	    		List<Arc> expected = Astar.run().getPath().getArcs();
 	    		Path path = Dijkstra.run().getPath();
 	    		for (int j = 0; j < expected.size() ; j++) {
 	    			assertEquals(expected.get(j), path.getArcs().get(j));
 	    		}
 	        }
 	    	else {
-	    		assertEquals(BFA.run().isFeasible(), Dijkstra.run().isFeasible());
+	    		assertEquals(Astar.run().isFeasible(), Dijkstra.run().isFeasible());
 	    	}
 	    }  
 		}
